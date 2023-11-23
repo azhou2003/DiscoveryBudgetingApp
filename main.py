@@ -1,13 +1,8 @@
-from census import Census
 from dotenv import load_dotenv
-from state_codes import state_fips #state_fips is a dictionary containing '<State>':'<fips_numeric_code>' key value pairs.
-import os
-
 load_dotenv()
+from census_api import CensusExpenditure
 
-#default query parameters for census api
-census_state = 'Texas' 
-census_year = 2022 
 
-c = Census(os.getenv("CENSUS_API_KEY"), year = census_year)
+#TODO: Process CSV download of Bank Activity
 
+#TODO: Take in input of State and Year and use to retrieve census data on food expenditure
