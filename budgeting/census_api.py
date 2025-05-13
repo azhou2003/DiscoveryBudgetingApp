@@ -1,5 +1,5 @@
 from census import Census
-from state_codes import state_fips #state_fips is a dictionary containing '<State>':'<fips_numeric_code>' key value pairs.
+from budgeting.state_codes import state_fips #state_fips is a dictionary containing '<State>':'<fips_numeric_code>' key value pairs.
 
 class CensusExpenditure:
     

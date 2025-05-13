@@ -2,3 +2,6 @@ env/
 .env
 *.csv
 __pycache__/
+sample/
+venv/
+resources/
