@@ -1,3 +1,10 @@
+# CATEGORY_MAPPING defines how banking or credit card transaction categories are mapped
+# to Bureau of Labor Statistics (BLS) Consumer Expenditure Survey (CES) categories.
+# 
+# This mapping allows user spending data to be compared against national averages 
+# from BLS datasets. It is customizable — feel free to modify or expand it to better 
+# align with the specific categories returned by your financial institution or desired 
+# analytical breakdowns.
 CATEGORY_MAPPING = {
     'Supermarkets': [
         'Food away from home',  
