@@ -1,8 +1,9 @@
+from .bank_activity_processing import BankActProc
 import csv
 from datetime import datetime, timedelta
 import matplotlib.pyplot as plt
 
-class DiscoverActProc:
+class DiscoverActProc(BankActProc):
     """
     A class for processing and analyzing Discover card transaction data from a CSV file.
 

@@ -96,11 +96,12 @@ class BLSComparator:
 
         results = {}
         for ucat, amt in user_spending_by_category.items():
-            bls_cat = self.category_mapping.get(ucat)
-            bls_amt = self.bls_data.get(bls_cat, 0)
-            if bls_cat not in results:
-                results[bls_cat] = {'user': 0, 'bls_avg': bls_amt, 'difference': 0}
-            results[bls_cat]['user'] += amt
-            results[bls_cat]['difference'] = results[bls_cat]['user'] - results[bls_cat]['bls_avg']
+            bls_cats = self.category_mapping.get(ucat, [])
+            for bls_cat in bls_cats:
+                bls_amt = self.bls_data.get(bls_cat, 0)
+                if bls_cat not in results:
+                    results[bls_cat] = {'user': 0, 'bls_avg': bls_amt, 'difference': 0}
+                results[bls_cat]['user'] += amt
+                results[bls_cat]['difference'] = results[bls_cat]['user'] - results[bls_cat]['bls_avg']
         return results
 

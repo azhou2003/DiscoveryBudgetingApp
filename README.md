@@ -26,13 +26,16 @@ budgeting_app/
 
 ## Features
 
-* Import and parse Discover credit card statements (CSV)
-* Weekly spending aggregation by category
-* Comparison against BLS CES benchmark data
-* Intelligent mapping of personal categories to public categories
+* Modular desktop GUI with separate tabs for Transactions, Trends, BLS Comparison, and Budget Management
+* Import and parse credit card statements from multiple banks (e.g., Discover, others extensible)
+* Weekly spending aggregation by category across all selected accounts
+* Comparison against BLS Consumer Expenditure Survey (CES) benchmark data
+* Intelligent mapping of personal categories to public (BLS) categories
+* Visual plots of weekly spending with user and BLS averages, including budget overlays
 * Highlight best/worst spending weeks
-* Visual plots of weekly spending with user/BLS averages
-* Modular design to support feature changes on the roadmap
+* Set, track, and compare budgets for each category
+* Save and load budget configurations
+* Extensible, modular design to support future features and additional data sources
 
 ---
 
@@ -40,10 +43,36 @@ budgeting_app/
 
 ### Core Improvements
 
-* Budget import and comparison against spending data
-* Desktop GUI with PyQt
-* Multi-bank support through a common transaction interface
-* Smart budgeting assistance using basic models
+* **Budget Planning and Management:**
+  * Set overall budget
+  * Use a model to suggest optimal budgeting across categories based on spending patterns or goals
+  * Add additional budget management features (e.g., alerts, recommendations, or visualizations)
+
+* **Desktop GUI refinement:**
+  * Improve overall layout and visual consistency
+  * Add icons and tooltips for better usability
+  * Enhance responsiveness and resizing behavior
+  * Implement keyboard shortcuts for common actions
+  * Add loading indicators and error messages for file operations
+  * Support dark mode and theme customization
+  * Make tables sortable and filterable
+  * Add context menus for quick actions (e.g., right-click on transactions)
+  * Improve accessibility (screen reader support, high-contrast mode)
+  * Add onboarding/help dialogs and in-app documentation
+
+* Multi-bank support through a common transaction interface (e.g. Chase, Bank of America, Wells Fargo, Citi, Capital One, American Express, and others)
+
+* **BLS Data Integration:**
+  * Create clear instructions for acquiring BLS Consumer Expenditure Survey data and converting it to JSON format for use in the app
+  * Implement a tool within the app (or as a CLI utility) to convert raw BLS data (CSV or Excel) to the required JSON format
+
+* **BLS Category Mapping:**
+  * Provide a user-friendly way to set or edit `bls_mappings` (mapping your transaction categories to BLS categories)
+  * Add instructions and/or a configuration tool for managing these mappings
+
+* **Category Grouping and Naming:**
+  * Add the ability to group similar categories together (especially when importing data from multiple banks with different naming conventions)
+  * Allow users to choose which category name to keep when merging/grouping categories across sources
 
 ### Data Enhancements
 
