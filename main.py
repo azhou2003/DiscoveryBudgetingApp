@@ -7,12 +7,15 @@ from utils.plotting import plot_spending_summary
 
 # Directly assign API keys for now (you can switch back to os.getenv if you prefer dotenv)
 
-# Initialize BLS comparator
-bls_comparator = BLSComparator(bls_api_key='-')
+import sys
+from PyQt6.QtWidgets import QApplication
+from ui.main_window import BudgetApp  # Adjust if your path is different
 
-# Initialize Discover processor with BLS comparator
-my_expend = DiscoverActProc('resources/Discover-2025-YearToDateSummary.csv', bls_comparator=bls_comparator)
+def main():
+    app = QApplication(sys.argv)
+    window = BudgetApp()
+    window.show()
+    sys.exit(app.exec())
 
-# Run analysis and plot
-my_expend.analyze_spending()
-plot_spending_summary(my_expend)
+if __name__ == "__main__":
+    main()
