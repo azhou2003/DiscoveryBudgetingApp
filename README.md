@@ -41,48 +41,58 @@ budgeting_app/
 
 ## Roadmap
 
-### Core Improvements
+### 1. Foundational Features
 
-* **Budget Planning and Management:**
-  * Set overall budget
-  * Use a model to suggest optimal budgeting across categories based on spending patterns or goals
-  * Add additional budget management features (e.g., alerts, recommendations, or visualizations)
+- **Multi-bank Support**
+  - Implement a common transaction interface (e.g., Chase, Bank of America, Wells Fargo, Citi, Capital One, American Express, etc.)
 
-* **Desktop GUI refinement:**
-  * Improve overall layout and visual consistency
-  * Add icons and tooltips for better usability
-  * Enhance responsiveness and resizing behavior
-  * Implement keyboard shortcuts for common actions
-  * Add loading indicators and error messages for file operations
-  * Support dark mode and theme customization
-  * Make tables sortable and filterable
-  * Add context menus for quick actions (e.g., right-click on transactions)
-  * Improve accessibility (screen reader support, high-contrast mode)
-  * Add onboarding/help dialogs and in-app documentation
+- **Category Grouping and Naming**
+  - Add ability to group similar categories (especially when importing from different banks)
+  - Let users choose preferred category names when merging/grouping across sources
 
-* Multi-bank support through a common transaction interface (e.g. Chase, Bank of America, Wells Fargo, Citi, Capital One, American Express, and others)
+- **BLS Data Integration**
+  - Create clear instructions for acquiring BLS Consumer Expenditure Survey data and converting it to JSON
+  - Implement a CLI tool or in-app utility to convert raw BLS data (CSV or Excel) to the required JSON format
 
-* **BLS Data Integration:**
-  * Create clear instructions for acquiring BLS Consumer Expenditure Survey data and converting it to JSON format for use in the app
-  * Implement a tool within the app (or as a CLI utility) to convert raw BLS data (CSV or Excel) to the required JSON format
+- **BLS Category Mapping**
+  - Provide a user-friendly tool for managing `bls_mappings` (mapping your transaction categories to BLS categories)
 
-* **BLS Category Mapping:**
-  * Provide a user-friendly way to set or edit `bls_mappings` (mapping your transaction categories to BLS categories)
-  * Add instructions and/or a configuration tool for managing these mappings
 
-* **Category Grouping and Naming:**
-  * Add the ability to group similar categories together (especially when importing data from multiple banks with different naming conventions)
-  * Allow users to choose which category name to keep when merging/grouping categories across sources
+### 2. Core Budgeting Capabilities
 
-### Data Enhancements
+- **Budget Planning and Management**
+  - Set an overall budget
+  - Use a model to suggest optimal budgets by category based on spending patterns or user-defined goals
+  - Add smart features like alerts, visualizations, and tailored recommendations
 
-* Integration with live BLS and Census APIs
-* Regional spending comparisons using FIPS codes and filters
 
-### Future Directions
+### 3. Interface and Usability Improvements
 
-* Forecasting future spending
-* AI-generated budgeting tips and insights
+- **Desktop GUI Refinement**
+  - Refine layout with improved icons, spacing, and visual consistency
+  - Add tooltips, onboarding/help dialogs, and in-app documentation
+  - Enhance layout behavior and theme support:
+    - Responsive resizing
+    - Dark mode and theme customization
+  - Implement keyboard shortcuts for common actions
+  - Add loading indicators and error messages for file operations
+  - Make tables sortable and filterable
+  - Add context menus (e.g., right-click actions on transactions)
+  - Improve accessibility (screen reader support, high-contrast mode)
+
+
+### 4. Data Enhancements
+
+- **External Data Integration**
+  - Integrate live BLS and Census APIs
+  - Enable regional spending comparisons using FIPS codes and filters
+
+### 5. Future Directions
+
+- **Smart Insights & Predictions**
+  - Forecast future spending
+  - Generate AI-powered budgeting tips and insights
+
 
 ---
 
