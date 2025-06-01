@@ -27,15 +27,10 @@ budgeting_app/
 ## Features
 
 * Modular desktop GUI with separate tabs for Transactions, Trends, BLS Comparison, and Budget Management
-* Modern, accessible design system with unified colors, spacing, and typography
-* Consistent toolbar with improved button sizing, icons, and a user-readable date range display
-* All tables feature visually integrated section headers, improved row heights, and left-aligned headers
 * Import and parse credit card statements from multiple banks (e.g., Discover, others extensible)
 * Weekly spending aggregation by category across all selected accounts
 * Comparison against BLS Consumer Expenditure Survey (CES) benchmark data
-* Intelligent mapping of personal categories to public (BLS) categories
 * Visual plots of weekly spending with user and BLS averages, including budget overlays
-* Highlight best/worst spending weeks
 * Set, track, and compare budgets for each category
 * Save and load budget configurations
 * Extensible, modular design to support future features and additional data sources

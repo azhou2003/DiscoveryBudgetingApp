@@ -1,6 +1,7 @@
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QComboBox, QCheckBox, QSizePolicy
 import pyqtgraph as pg
 from .style_guide import spacing, fonts, colors
+from budgeting.category_manager import CategoryManager
 
 class TrendsTab(QWidget):
     """
@@ -15,6 +16,7 @@ class TrendsTab(QWidget):
         """
         super().__init__()
         self.main_window = main_window
+        self.category_manager = CategoryManager()
         self.layout = QVBoxLayout()
         self.layout.setContentsMargins(spacing['md'], spacing['md'], spacing['md'], spacing['md'])
         self.layout.setSpacing(spacing['md'])
@@ -50,3 +52,11 @@ class TrendsTab(QWidget):
         self.plot_widget.setMinimumHeight(spacing['xl'] * 2)
         self.layout.addWidget(self.plot_widget, stretch=1)
         self.setLayout(self.layout)
+    
+    def apply_category_grouping_to_trends(self, categories_data):
+        """Apply category grouping to trends data"""
+        return self.category_manager.apply_grouping_to_data(categories_data)
+    
+    def get_grouped_categories(self, original_categories):
+        """Get grouped categories for display in trends selector"""
+        return self.category_manager.get_grouped_categories(original_categories)

@@ -131,9 +131,7 @@ class BudgetApp(QMainWindow):
             proc.analyze_spending(
                 start_date=datetime.combine(start, datetime.min.time()),
                 end_date=datetime.combine(end, datetime.min.time())
-            )
-
-        # Now aggregate for UI updates
+            )        # Now aggregate for UI updates
         self.update_transaction_table()
         self.update_category_selector()
         self.update_trend_plot()
@@ -157,7 +155,12 @@ class BudgetApp(QMainWindow):
         for cat in user_weekly_by_cat:
             user_weekly_by_cat[cat] /= count_by_cat[cat]
 
-        # Prepare BLS comparison data
+        # Update the BLS tab with new methods
+        self.bls_tab.populate_from_processors(self.processors)
+        if hasattr(self.bls_comparator, 'bls_data'):
+            self.bls_tab.set_bls_data(self.bls_comparator.bls_data)
+
+        # Prepare BLS comparison data for legacy table (backward compatibility)
         self.bls_table.setRowCount(0)
         for cat in sorted(user_weekly_by_cat.keys()):
             user_weekly = user_weekly_by_cat[cat]
@@ -293,11 +296,20 @@ class BudgetApp(QMainWindow):
                         continue
                 self.plot_widget.plot(x_vals, [user_budget_total] * len(x_vals), pen=pg.mkPen('g', style=Qt.PenStyle.DashLine, width=2), label='Budget')
         else:
-            # Aggregate category series
+            # Aggregate category series with grouping support
             category_series = {}
             for proc in checked_procs:
-                for week, val in proc.category_series.get(selected_category, {}).items():
-                    category_series[week] = category_series.get(week, 0) + val
+                # Check if this is a grouped category or original category
+                if selected_category in proc.category_series:
+                    # Direct match - use as is
+                    for week, val in proc.category_series[selected_category].items():
+                        category_series[week] = category_series.get(week, 0) + val
+                else:
+                    # Check if this is a grouped category by looking up original categories
+                    original_cats = self.trends_tab.category_manager.get_original_categories_for_group(selected_category)
+                    for orig_cat in original_cats:
+                        for week, val in proc.category_series.get(orig_cat, {}).items():
+                            category_series[week] = category_series.get(week, 0) + val
             if not category_series:
                 self.plot_widget.setTitle("No data available.")
                 return
@@ -351,7 +363,12 @@ class BudgetApp(QMainWindow):
             for cat, avg in proc.average_spending_by_category.items():
                 avg_by_cat[cat] = avg_by_cat.get(cat, 0) + avg
                 count_by_cat[cat] = count_by_cat.get(cat, 0) + 1
-        categories = sorted(avg_by_cat.keys())
+        
+        # Apply category grouping to budget data
+        grouped_avg_by_cat = self.budget_tab.apply_category_grouping_to_budget(avg_by_cat)
+        grouped_count_by_cat = self.budget_tab.apply_category_grouping_to_budget(count_by_cat)
+        
+        categories = sorted(grouped_avg_by_cat.keys())
         self.budget_table.setRowCount(len(categories))
 
         for i, cat in enumerate(categories):
@@ -366,7 +383,7 @@ class BudgetApp(QMainWindow):
                 budget_input.setText("0")
                 self.budget_table.setCellWidget(i, 1, budget_input)
 
-            actual = avg_by_cat[cat] / count_by_cat[cat] if count_by_cat[cat] else 0
+            actual = grouped_avg_by_cat[cat] / grouped_count_by_cat[cat] if grouped_count_by_cat[cat] else 0
             self.budget_table.setItem(i, 2, QTableWidgetItem(f"${actual:.2f}"))
             self.budget_table.setItem(i, 3, QTableWidgetItem("-"))
 
@@ -413,9 +430,13 @@ class BudgetApp(QMainWindow):
         categories = set()
         for proc in checked_procs:
             categories.update(proc.category_series.keys())
+        
+        # Apply category grouping to the category list
+        grouped_categories = self.trends_tab.get_grouped_categories(list(categories))
+        
         self.category_selector.clear()
         self.category_selector.addItem("Total Spending")
-        for cat in sorted(categories):
+        for cat in sorted(grouped_categories):
             self.category_selector.addItem(cat)
 
     def compare_spending(self, user_spending_by_category):
