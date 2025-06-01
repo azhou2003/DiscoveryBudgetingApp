@@ -10,26 +10,43 @@ from PyQt6.QtWidgets import (
 from PyQt6.QtCore import Qt, QDate
 from budgeting.discover_activity_processing import DiscoverActProc
 from budgeting.bls_comparator import BLSComparator
-from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
-from matplotlib.figure import Figure
 from datetime import datetime
+import pyqtgraph as pg
 
 from .transactions_tab import TransactionsTab
 from .trends_tab import TrendsTab
 from .bls_tab import BLSTab
 from .budget_tab import BudgetTab
+from .theme_manager import apply_theme
+from PyQt6.QtGui import QAction, QIcon
+from .style_guide import spacing, colors, fonts
+from .toolbar import ToolbarWidget
 
 class BudgetApp(QMainWindow):
+    """
+    Main application window for the Discovery Budgeting App.
+    Manages tabs, toolbar, and core UI logic.
+    """
     def __init__(self):
+        """
+        Initialize the main window, toolbar, tabs, and status bar.
+        """
         super().__init__()
         self.setWindowTitle("Discovery Budgeting App")
-        self.setGeometry(100, 100, 1000, 600)
+        self.setMinimumSize(1000, 600)
+        self.resize(1200, 800)
         self.processors = []
         self.bls_comparator = None
 
-        self.init_toolbar()
+        # Use the new ToolbarWidget
+        self.toolbar = ToolbarWidget(self)
+        self.addToolBar(self.toolbar)
 
         self.tabs = QTabWidget()
+        self.tabs.setTabPosition(QTabWidget.TabPosition.North)
+        self.tabs.setMovable(False)
+        self.tabs.setStyleSheet("QTabBar::tab { min-width: 160px; padding: 12px 24px; font-size: 15px; }")
+        self.tabs.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         self.setCentralWidget(self.tabs)
 
         # Instantiate tabs and pass self for callbacks/state
@@ -41,7 +58,7 @@ class BudgetApp(QMainWindow):
         self.tabs.addTab(self.transactions_tab, "Transactions")
         self.tabs.addTab(self.trends_tab, "Trends")
         self.tabs.addTab(self.bls_tab, "BLS Comparison")
-        self.tabs.addTab(self.budget_tab, "Budget Comparison")
+        self.tabs.addTab(self.budget_tab, "Budget Management")
 
         self.setStatusBar(QStatusBar())
 
@@ -51,70 +68,15 @@ class BudgetApp(QMainWindow):
         self.category_selector = self.trends_tab.category_selector
         self.show_budget_checkbox = self.trends_tab.show_budget_checkbox
         self.show_bls_checkbox = self.trends_tab.show_bls_checkbox
-        self.figure = self.trends_tab.figure
-        self.canvas = self.trends_tab.canvas
+        self.plot_widget = self.trends_tab.plot_widget
         self.bls_table = self.bls_tab.bls_table
         self.budget_table = self.budget_tab.budget_table
 
-    def init_toolbar(self):
-        toolbar = QToolBar("File Toolbar")
-        self.addToolBar(toolbar)
+    def show_help_dialog(self):
+        QMessageBox.information(self, "Help", "Need help? Visit the documentation or contact support.")
 
-        # Main container widget for the toolbar
-        toolbar_widget = QWidget()
-        toolbar_layout = QHBoxLayout()
-        toolbar_layout.setContentsMargins(0, 0, 0, 0)
-        toolbar_widget.setLayout(toolbar_layout)
-
-        # Left: Load buttons (stacked vertically, left aligned)
-        left_widget = QWidget()
-        left_layout = QVBoxLayout()
-        left_layout.setContentsMargins(0, 0, 0, 0)
-        left_layout.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
-        load_csv_button = QPushButton("Load CSV")
-        load_csv_button.clicked.connect(self.load_csv)
-        left_layout.addWidget(load_csv_button)
-        load_bls_button = QPushButton("Load BLS")
-        load_bls_button.clicked.connect(self.load_bls)
-        left_layout.addWidget(load_bls_button)
-        left_widget.setLayout(left_layout)
-
-        # Center: Analyze button (centered, larger, full height)
-        center_widget = QWidget()
-        center_layout = QVBoxLayout()
-        center_layout.setContentsMargins(10, 10, 10, 10)
-        center_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        analyze_button = QPushButton("Analyze")
-        analyze_button.clicked.connect(self.analyze_spending)
-        analyze_button.setMinimumHeight(32)
-        analyze_button.setStyleSheet("font-size: 18px; padding: 12px 24px;")
-        analyze_button.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
-        center_layout.addWidget(analyze_button)
-        center_widget.setLayout(center_layout)
-
-        # Right: Date pickers (stacked vertically, right aligned)
-        right_widget = QWidget()
-        right_layout = QVBoxLayout()
-        right_layout.setContentsMargins(0, 0, 0, 0)
-        right_layout.setAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
-        self.start_date_picker = QDateEdit()
-        self.start_date_picker.setCalendarPopup(True)
-        self.start_date_picker.setDisplayFormat("yyyy-MM-dd")
-        right_layout.addWidget(QLabel("Start Date:"))
-        right_layout.addWidget(self.start_date_picker)
-        self.end_date_picker = QDateEdit()
-        self.end_date_picker.setCalendarPopup(True)
-        self.end_date_picker.setDisplayFormat("yyyy-MM-dd")
-        right_layout.addWidget(QLabel("End Date:"))
-        right_layout.addWidget(self.end_date_picker)
-        right_widget.setLayout(right_layout)
-
-        # Add widgets to the main toolbar layout
-        toolbar_layout.addWidget(left_widget, 0)
-        toolbar_layout.addWidget(center_widget, 1)
-        toolbar_layout.addWidget(right_widget, 0)
-
-        toolbar.addWidget(toolbar_widget)
+    def show_documentation(self):
+        QMessageBox.information(self, "Documentation", "Open the user guide or documentation website.")
 
     def load_csv(self):
         file_path, _ = QFileDialog.getOpenFileName(self, "Open Bank CSV", "resources/", "CSV Files (*.csv)")
@@ -156,15 +118,15 @@ class BudgetApp(QMainWindow):
         for proc in checked_procs:
             all_dates += list(proc.transactions_dict.keys())
         if not all_dates:
+            self.update_date_range_label(None, None)
             return
         first_date = min(all_dates)
         last_date = max(all_dates)
-        self.start_date_picker.setDate(QDate(first_date.year, first_date.month, first_date.day))
-        self.end_date_picker.setDate(QDate(last_date.year, last_date.month, last_date.day))
+        self.update_date_range_label(first_date, last_date)
 
         # Analyze each processor for the selected date range
-        start = self.start_date_picker.date().toPyDate()
-        end = self.end_date_picker.date().toPyDate()
+        start = first_date
+        end = last_date
         for proc in checked_procs:
             proc.analyze_spending(
                 start_date=datetime.combine(start, datetime.min.time()),
@@ -236,11 +198,8 @@ class BudgetApp(QMainWindow):
         checked_procs = [p['processor'] for p in self.processors if p['checked']]
         if not checked_procs:
             return
-        start = self.start_date_picker.date().toPyDate()
-        end = self.end_date_picker.date().toPyDate()
-        for proc in checked_procs:
-            proc.analyze_spending(start_date=datetime.combine(start, datetime.min.time()),
-                                  end_date=datetime.combine(end, datetime.min.time()))
+        # Use the current date range from the label (if available)
+        # This function is now a no-op for date range, but kept for compatibility
         self.update_transaction_table()
         self.update_trend_plot()
         self.populate_budget_table()
@@ -280,14 +239,11 @@ class BudgetApp(QMainWindow):
     def update_trend_plot(self):
         checked_procs = [p['processor'] for p in self.processors if p['checked']]
         if not checked_procs:
-            self.figure.clear()
-            ax = self.figure.add_subplot(111)
-            ax.set_title("No data available.")
-            self.canvas.draw()
+            self.plot_widget.clear()
+            self.plot_widget.setTitle("No data available.")
             return
 
-        self.figure.clear()
-        ax = self.figure.add_subplot(111)
+        self.plot_widget.clear()
 
         selected_category = self.category_selector.currentText()
         show_budget = self.show_budget_checkbox.isChecked()
@@ -301,12 +257,14 @@ class BudgetApp(QMainWindow):
                 for week, val in proc.weekly_spending.items():
                     weekly_totals[week] = weekly_totals.get(week, 0) + val
             if not weekly_totals:
-                ax.set_title("No data available.")
-                self.canvas.draw()
+                self.plot_widget.setTitle("No data available.")
                 return
             weeks = sorted(weekly_totals.keys())
             values = [weekly_totals[wk] for wk in weeks]
-            ax.plot(weeks, values, marker='o', label='User Spending')
+            # Convert weeks (datetime) to indices and labels for pyqtgraph
+            week_labels = [wk.strftime('%Y-%m-%d') for wk in weeks]
+            x_vals = list(range(len(weeks)))
+            self.plot_widget.plot(x_vals, values, pen='b', symbol='o', label='User Spending')
             avg_actual = sum(values) / len(values) if values else 0
 
             # --- BLS aggregation for Total Spending ---
@@ -324,8 +282,7 @@ class BudgetApp(QMainWindow):
                 if bls_avg == 0:
                     bls_avg = None
             if show_bls and bls_avg is not None:
-                ax.plot(weeks, [bls_avg] * len(weeks), linestyle='--', color='red', label='BLS Avg')
-
+                self.plot_widget.plot(x_vals, [bls_avg] * len(x_vals), pen=pg.mkPen('r', style=Qt.PenStyle.DashLine, width=2), label='BLS Avg')
             if show_budget:
                 user_budget_total = 0
                 for i in range(self.budget_table.rowCount()):
@@ -334,7 +291,7 @@ class BudgetApp(QMainWindow):
                         user_budget_total += val
                     except ValueError:
                         continue
-                ax.plot(weeks, [user_budget_total] * len(weeks), linestyle='--', color='green', label='Budget')
+                self.plot_widget.plot(x_vals, [user_budget_total] * len(x_vals), pen=pg.mkPen('g', style=Qt.PenStyle.DashLine, width=2), label='Budget')
         else:
             # Aggregate category series
             category_series = {}
@@ -342,12 +299,13 @@ class BudgetApp(QMainWindow):
                 for week, val in proc.category_series.get(selected_category, {}).items():
                     category_series[week] = category_series.get(week, 0) + val
             if not category_series:
-                ax.set_title("No data available.")
-                self.canvas.draw()
+                self.plot_widget.setTitle("No data available.")
                 return
             weeks = sorted(category_series.keys())
             values = [category_series[wk] for wk in weeks]
-            ax.plot(weeks, values, marker='o', label='User Spending')
+            week_labels = [wk.strftime('%Y-%m-%d') for wk in weeks]
+            x_vals = list(range(len(weeks)))
+            self.plot_widget.plot(x_vals, values, pen='b', symbol='o', label='User Spending')
             avg_actual = sum(values) / len(values) if values else 0
             bls_avg = None
             if self.bls_comparator and hasattr(self.bls_comparator, 'get_bls_avg_for_user_category'):
@@ -355,19 +313,21 @@ class BudgetApp(QMainWindow):
                 if bls_avg is not None:
                     bls_avg = bls_avg / 52  # Convert annual to weekly
             if show_bls and bls_avg is not None:
-                ax.plot(weeks, [bls_avg] * len(weeks), linestyle='--', color='red', label='BLS Avg')
+                self.plot_widget.plot(x_vals, [bls_avg] * len(x_vals), pen=pg.mkPen('r', style=Qt.PenStyle.DashLine, width=2), label='BLS Avg')
             if show_budget:
                 user_budget = self.get_user_budget(selected_category)
                 if user_budget is not None:
-                    ax.plot(weeks, [user_budget] * len(weeks), linestyle='--', color='green', label='Budget')
+                    self.plot_widget.plot(x_vals, [user_budget] * len(x_vals), pen=pg.mkPen('g', style=Qt.PenStyle.DashLine, width=2), label='Budget')
 
-        ax.set_title(f"Weekly Trend: {selected_category}")
-        ax.set_xlabel("Week Starting")
-        ax.set_ylabel("Amount ($)")
-        ax.tick_params(axis='x', rotation=45)
-        ax.legend()
-        self.figure.tight_layout()
-        self.canvas.draw()
+        self.plot_widget.setTitle(f"Weekly Trend: {selected_category}")
+        self.plot_widget.setLabel('left', 'Amount ($)')
+        self.plot_widget.setLabel('bottom', 'Week Starting')
+        # Set custom x-axis ticks for week labels
+        ax = self.plot_widget.getAxis('bottom')
+        ax.setTicks([list(zip(x_vals, week_labels))])
+        self.plot_widget.addLegend()
+        self.plot_widget.setXRange(0, len(x_vals)-1, padding=0)
+        self.plot_widget.setYRange(0, max(values) * 1.1, padding=0)
 
     def get_user_budget(self, category):
         for i in range(self.budget_table.rowCount()):
@@ -486,3 +446,12 @@ class BudgetApp(QMainWindow):
                 count_by_cat[cat] = count_by_cat.get(cat, 0) + 1
         for cat in user_weekly_by_cat:
             user_weekly_by_cat[cat] /= count_by_cat[cat]
+
+    def update_date_range_label(self, start_date, end_date):
+        """
+        Update the date range label in the toolbar.
+        Args:
+            start_date: datetime.date or None
+            end_date: datetime.date or None
+        """
+        self.toolbar.update_date_range_label(start_date, end_date)

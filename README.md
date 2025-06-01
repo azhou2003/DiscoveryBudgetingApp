@@ -27,6 +27,9 @@ budgeting_app/
 ## Features
 
 * Modular desktop GUI with separate tabs for Transactions, Trends, BLS Comparison, and Budget Management
+* Modern, accessible design system with unified colors, spacing, and typography
+* Consistent toolbar with improved button sizing, icons, and a user-readable date range display
+* All tables feature visually integrated section headers, improved row heights, and left-aligned headers
 * Import and parse credit card statements from multiple banks (e.g., Discover, others extensible)
 * Weekly spending aggregation by category across all selected accounts
 * Comparison against BLS Consumer Expenditure Survey (CES) benchmark data
@@ -36,6 +39,16 @@ budgeting_app/
 * Set, track, and compare budgets for each category
 * Save and load budget configurations
 * Extensible, modular design to support future features and additional data sources
+
+---
+
+## UI Modernization & Refactoring
+
+- All UI code is modularized: toolbar logic is in `ui/toolbar.py`, each tab in its own file, and design tokens in `ui/style_guide.py`.
+- Toolbar is now a dedicated widget with clear, accessible button sizing and a non-editable, user-friendly date range label.
+- Table section headers are visually part of the tables (not separate labels), using merged header rows for clarity and accessibility.
+- Consistent spacing, margins, and font sizes across all UI elements.
+- All code is organized with docstrings and best practices for maintainability.
 
 ---
 
@@ -73,12 +86,10 @@ budgeting_app/
   - Add tooltips, onboarding/help dialogs, and in-app documentation
   - Enhance layout behavior and theme support:
     - Responsive resizing
-    - Dark mode and theme customization
-  - Implement keyboard shortcuts for common actions
+    - Dark mode 
   - Add loading indicators and error messages for file operations
   - Make tables sortable and filterable
   - Add context menus (e.g., right-click actions on transactions)
-  - Improve accessibility (screen reader support, high-contrast mode)
 
 
 ### 4. Data Enhancements
