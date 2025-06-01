@@ -1,0 +1,10 @@
+{
+  "budgets": {
+    "Gasoline": 10.0,
+    "Merchandise": 20.0,
+    "Restaurants": 40.0,
+    "Services": 30.0,
+    "Supermarkets": 10.0,
+    "Travel/ Entertainment": 15.0
+  }
+}
