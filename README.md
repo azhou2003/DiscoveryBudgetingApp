@@ -42,16 +42,6 @@ budgeting_app/
 
 ---
 
-## UI Modernization & Refactoring
-
-- All UI code is modularized: toolbar logic is in `ui/toolbar.py`, each tab in its own file, and design tokens in `ui/style_guide.py`.
-- Toolbar is now a dedicated widget with clear, accessible button sizing and a non-editable, user-friendly date range label.
-- Table section headers are visually part of the tables (not separate labels), using merged header rows for clarity and accessibility.
-- Consistent spacing, margins, and font sizes across all UI elements.
-- All code is organized with docstrings and best practices for maintainability.
-
----
-
 ## Roadmap
 
 ### 1. Foundational Features
